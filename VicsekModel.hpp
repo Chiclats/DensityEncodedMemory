@@ -1,5 +1,5 @@
 /*--------------------
-ver 241218
+ver 241229
 --------------------*/
 
 #ifndef VicsekModel_hpp
@@ -149,7 +149,12 @@ namespace VicsekModel_2D{
     double NewDir;
     vector<vector<int>> NewMeshedIndexMat(MeshedIndexMat.size());
     for( int i_Particle=0 ; i_Particle<PG.size() ; i_Particle++ ){
-      NewDir=atan2(NeighborDirList_y[i_Particle],NeighborDirList_x[i_Particle]);
+      if(NeighborDirList_y[i_Particle]==0 and NeighborDirList_x[i_Particle]==0){//to avoid everything cancelled out
+	NewDir=atan2(PG[i_Particle].vy,PG[i_Particle].vx);
+	cerr<<"Attention: zero vector sum causing dir decision failure."<<endl;
+      }
+      else NewDir=atan2(NeighborDirList_y[i_Particle],NeighborDirList_x[i_Particle]);
+      
       NewDir+=Sigma*(RandGen[i_MP].RandomDouble()*2*pi-pi); 
       NewDir+=GuidingCoeff*(2*PG[i_Particle].vx*PG[i_Particle].vy);// GuidingCoeff*sin(2*Dir)
       //WARNING: a little difference between the old version: Nematic force is on the old value of Dir

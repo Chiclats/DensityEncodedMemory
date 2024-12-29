@@ -1,5 +1,5 @@
 /*--------------------
-ver 240912
+ver 241229
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -28,6 +28,10 @@ public:
     Dir=Di_;
     Tag=Ta_;
     DoubleIdentifier=DI_;
+
+    //Dir range [0,2pi)
+    while(Dir>=2*pi) Dir-=2*pi;
+    while(Dir<0) Dir+=2*pi;
   }
   PolarParticle2D(complex<double> Po_,double Di_,int Ta_) : PolarParticle2D(Po_,Di_,Ta_,{}) {}
   PolarParticle2D(complex<double> Po_,double Di_) : PolarParticle2D(Po_,Di_,1) {}
