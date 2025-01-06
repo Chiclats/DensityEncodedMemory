@@ -22,6 +22,7 @@
 
 #include"VicsekModel.hpp"
 #include"./ContinuousVicsekModel.hpp"
+#include"./NematicAlgnPP.hpp"
 
 #ifdef CheckingHeader
 HeaderChecker(ParticleSimulationHeaders_hpp);
