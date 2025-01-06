@@ -1,5 +1,5 @@
 /*--------------------
-ver 241229
+ver 250106
 --------------------*/
 
 #ifndef NematicAlgnPP_hpp
@@ -69,13 +69,13 @@ namespace NematicAlgnPolarParticles_2D{
     return AnsMat;
   }
 
-  void Evolve_NAPP(vector<Particle>& PG,
-		   vector<vector<int>>& MeshedIndexMat,
-		   const vector<array<int,4>>& LDAdjBox,
-		   const vector<double>& Parameters,// Systemsize_x Systemsize_y Charlength Velocity Sigma Guidingcoeff
-		   const function<double(Particle,Particle)>& Distance,
-		   const int& i_MP=0)
-  {
+  void Evolve_NAPP_2FoldMean(vector<Particle>& PG,
+			     vector<vector<int>>& MeshedIndexMat,
+			     const vector<array<int,4>>& LDAdjBox,
+			     const vector<double>& Parameters,// Systemsize_x Systemsize_y Charlength Velocity Sigma Guidingcoeff
+			     const function<double(Particle,Particle)>& Distance,
+			     const int& i_MP=0)
+  {// Dir(t+1) = 1/2 * arg( mean( exp( i 2 NeighborDir ) ) ) + (0 or pi making it closer to Dir(t) )
     double
       SystemSize_X=Parameters[0],
       SystemSize_Y=Parameters[1],
@@ -179,12 +179,12 @@ namespace NematicAlgnPolarParticles_2D{
     
   }
 
-  PolarParticle2D_GT Evolve_NAPP_Periodic(const PolarParticle2D_GT& PG,
-					  const BoxInfoT& BoxInfo,
-					  const vector<double>& Parameters,// Systemsize_x Systemsize_y Charlength Velocity Sigma Guidingcoeff
-					  const int& StepNumber,
-					  const int& i_MP=0)
-  {//an integrated version of Evolve_VicsekModel, evolving for StepNumber steps
+  PolarParticle2D_GT Evolve_NAPP_2FoldMean_Periodic(const PolarParticle2D_GT& PG,
+						    const BoxInfoT& BoxInfo,
+						    const vector<double>& Parameters,// Systemsize_x Systemsize_y Charlength Velocity Sigma Guidingcoeff
+						    const int& StepNumber,
+						    const int& i_MP=0)
+  {//an integrated version of Evolve_VicsekModel, evolving for StepNumber steps, based on ``Evolve_NAPP_2FoldMean''
     const double
       SystemSize_X=Parameters[0],
       SystemSize_Y=Parameters[1],
@@ -196,13 +196,143 @@ namespace NematicAlgnPolarParticles_2D{
     const function<double(Particle,Particle)> Distance_=Distance::Periodic(SystemSize_X,SystemSize_Y,CharLength);
 
     for( int i_Step=0 ; i_Step<StepNumber ; i_Step++ )
-      Evolve_NAPP(NAPP,MeshedIndex,LDAdjBox,Parameters,Distance_,i_MP);
+      Evolve_NAPP_2FoldMean(NAPP,MeshedIndex,LDAdjBox,Parameters,Distance_,i_MP);
     
     auto ansPG=PG;
     UpdatePGFromNAPP(ansPG,NAPP);
     return ansPG;
   }
   
+  void Evolve_NAPP_Turned1FoldMean(vector<Particle>& PG,
+				   vector<vector<int>>& MeshedIndexMat,
+				   const vector<array<int,4>>& LDAdjBox,
+				   const vector<double>& Parameters,// Systemsize_x Systemsize_y Charlength Velocity Sigma Guidingcoeff
+				   const function<double(Particle,Particle)>& Distance,
+				   const int& i_MP=0)
+  {// Dir(t+1) = arg( mean( sgn( cos( NeighborDir - Dir ) ) * exp( i NeighborDir ) ) )
+    double
+      SystemSize_X=Parameters[0],
+      SystemSize_Y=Parameters[1],
+      CharLength=Parameters[2],
+      Velocity=Parameters[3],
+      Sigma=Parameters[4],
+      GuidingCoeff=0;
+    if(Parameters.size()==6) GuidingCoeff=Parameters[5];
+    
+    vector<double> NeighborDirList_x(PG.size(),0),NeighborDirList_y(PG.size(),0);
+    //to store sum(exp(i Dir))
+
+    int i_i,i_j;
+    double x_i,y_i,x_j,y_j;
+    //calculate the mean velocity dir
+    for( int i_Box=0 ; i_Box<LDAdjBox.size() ; i_Box++ )
+      for( int i=0 ; i<MeshedIndexMat[i_Box].size() ; i++ ){
+	i_i=MeshedIndexMat[i_Box][i];
+	x_i=PG[i_i].x;
+	y_i=PG[i_i].y;
+
+	//itself is taken into account
+	NeighborDirList_x[i_i]+=PG[i_i].vx; // cos Dir
+	NeighborDirList_y[i_i]+=PG[i_i].vy;   // sin Dir
+	
+	//in i_Box
+	for( int j=i+1 ; j<MeshedIndexMat[i_Box].size() ; j++ ){
+	  i_j=MeshedIndexMat[i_Box][j];
+	  x_j=PG[i_j].x;
+	  y_j=PG[i_j].y;
+
+	  if((x_i-x_j)*(x_i-x_j)+(y_i-y_j)*(y_i-y_j)<=CharLength*CharLength){
+	    if(PG[i_j].vx*PG[i_i].vx+PG[i_j].vy*PG[i_i].vy>0){ // cos( Dir_i - Dir_j ) > 0
+	      NeighborDirList_x[i_i]+=PG[i_j].vx;
+	      NeighborDirList_y[i_i]+=PG[i_j].vy;
+	      NeighborDirList_x[i_j]+=PG[i_i].vx;
+	      NeighborDirList_y[i_j]+=PG[i_i].vy;
+	    }
+	    else if(PG[i_j].vx*PG[i_i].vx+PG[i_j].vy*PG[i_i].vy<0){ // cos( Dir_i - Dir_j ) < 0
+	      NeighborDirList_x[i_i]+=-PG[i_j].vx;
+	      NeighborDirList_y[i_i]+=-PG[i_j].vy;
+	      NeighborDirList_x[i_j]+=-PG[i_i].vx;
+	      NeighborDirList_y[i_j]+=-PG[i_i].vy;
+	    }
+	    // if cos( Dir_i - Dir_j ) = 0, it will not be added into the sum
+	  }
+	}
+
+	//inter-box
+	for( int i_AdjBox : LDAdjBox[i_Box] )
+	  for( int i_j : MeshedIndexMat[i_AdjBox] )
+	    if(Distance(PG[i_i],PG[i_j])<=CharLength*CharLength){
+	      if(PG[i_j].vx*PG[i_i].vx+PG[i_j].vy*PG[i_i].vy>0){ // cos( Dir_i - Dir_j ) > 0
+		NeighborDirList_x[i_i]+=PG[i_j].vx;
+		NeighborDirList_y[i_i]+=PG[i_j].vy;
+		NeighborDirList_x[i_j]+=PG[i_i].vx;
+		NeighborDirList_y[i_j]+=PG[i_i].vy;
+	      }
+	      else if(PG[i_j].vx*PG[i_i].vx+PG[i_j].vy*PG[i_i].vy<0){ // cos( Dir_i - Dir_j ) < 0
+		NeighborDirList_x[i_i]+=-PG[i_j].vx;
+		NeighborDirList_y[i_i]+=-PG[i_j].vy;
+		NeighborDirList_x[i_j]+=-PG[i_i].vx;
+		NeighborDirList_y[i_j]+=-PG[i_i].vy;
+	      }
+	      // if cos( Dir_i - Dir_j ) = 0, it will not be added into the sum
+	    }
+      }
+
+    //move particles
+    double NewDir;
+    vector<vector<int>> NewMeshedIndexMat(MeshedIndexMat.size());
+    for( int i_Particle=0 ; i_Particle<PG.size() ; i_Particle++ ){
+
+      if(NeighborDirList_y[i_Particle]==0 and NeighborDirList_x[i_Particle]==0){//to avoid everything cancelled out
+	NewDir=atan2(PG[i_Particle].vy,PG[i_Particle].vx);
+	cerr<<"Attention: zero vector sum causing dir decision failure."<<endl;
+      }
+      else NewDir=atan2(NeighborDirList_y[i_Particle],NeighborDirList_x[i_Particle]);
+            
+      NewDir+=Sigma*(RandGen[i_MP].RandomDouble()*2*pi-pi); 
+      NewDir+=GuidingCoeff*(4*PG[i_Particle].vx*PG[i_Particle].vx*PG[i_Particle].vx*PG[i_Particle].vy-
+			    4*PG[i_Particle].vx*PG[i_Particle].vy*PG[i_Particle].vy*PG[i_Particle].vy);// GuidingCoeff*sin(4*Dir)
+      //WARNING: Nematic force is on the old value of Dir
+      PG[i_Particle].vx=cos(NewDir);
+      PG[i_Particle].vy=sin(NewDir);
+      PG[i_Particle].x+=Velocity*PG[i_Particle].vx;
+      PG[i_Particle].y+=Velocity*PG[i_Particle].vy;
+
+      //WARNING: for periodic only
+      if(PG[i_Particle].x>=SystemSize_X) PG[i_Particle].x-=SystemSize_X;
+      if(PG[i_Particle].x<=0) PG[i_Particle].x+=SystemSize_X;
+      if(PG[i_Particle].y>=SystemSize_Y) PG[i_Particle].y-=SystemSize_Y;
+      if(PG[i_Particle].y<=0) PG[i_Particle].y+=SystemSize_Y;
+
+      NewMeshedIndexMat[int(PG[i_Particle].x/CharLength)+int(SystemSize_X/CharLength)*int(PG[i_Particle].y/CharLength)].push_back(i_Particle);
+    }
+    MeshedIndexMat=NewMeshedIndexMat;
+    
+  }
+
+  PolarParticle2D_GT Evolve_NAPP_Turned1FoldMean_Periodic(const PolarParticle2D_GT& PG,
+							  const BoxInfoT& BoxInfo,
+							  const vector<double>& Parameters,// Systemsize_x Systemsize_y Charlength Velocity Sigma Guidingcoeff
+							  const int& StepNumber,
+							  const int& i_MP=0)
+  {//an integrated version of Evolve_VicsekModel, evolving for StepNumber steps, based on ``Evolve_NAPP_Turned1FoldMean''
+    const double
+      SystemSize_X=Parameters[0],
+      SystemSize_Y=Parameters[1],
+      CharLength=Parameters[2];
+    
+    vector<Particle> NAPP=PolarParticle2D_GT_To_NAPP(PG);
+    vector<vector<int>> MeshedIndex=MeshingIndex(PG,SystemSize_X,SystemSize_Y,CharLength);
+    const vector<array<int,4>> LDAdjBox=LowerRightAdjacentBoxIndex(BoxInfo);
+    const function<double(Particle,Particle)> Distance_=Distance::Periodic(SystemSize_X,SystemSize_Y,CharLength);
+
+    for( int i_Step=0 ; i_Step<StepNumber ; i_Step++ )
+      Evolve_NAPP_Turned1FoldMean(NAPP,MeshedIndex,LDAdjBox,Parameters,Distance_,i_MP);
+    
+    auto ansPG=PG;
+    UpdatePGFromNAPP(ansPG,NAPP);
+    return ansPG;
+  }
 }
 
 #endif//Nematicalgnpp_hpp
