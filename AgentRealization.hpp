@@ -1,5 +1,5 @@
 /*--------------------
-ver 241229
+ver 250130
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -158,13 +158,16 @@ namespace FileIO{
     fin.close();
     return AnsVec;
   }//checked 240501
-
+  
   void OutParticleVec(string Filename,PolarParticle2D_GT PG,bool WriteTag=true)
   {
     ofstream fout;
     fout.open(Filename);
+
+    fout<<fixed<<setprecision(DoublePrecession);
+    
     for( int i=0 ; i<PG.size() ; i++){
-      fout<<setprecision(DoublePrecession)<<real(PG[i].Pos)<<' '<<imag(PG[i].Pos)<<' '<<PG[i].Dir;
+      fout<<real(PG[i].Pos)<<' '<<imag(PG[i].Pos)<<' '<<PG[i].Dir;
       if(WriteTag) fout<<' '<<PG[i].Tag;
       fout<<endl;
     }
