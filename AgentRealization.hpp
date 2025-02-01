@@ -1,5 +1,5 @@
 /*--------------------
-ver 250130
+ver 250201
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -189,6 +189,76 @@ namespace FileIO{
     
     fout.close();
     return;
+  }
+
+  void OutParticleVec_Bin(const string& Filename,const PolarParticle2D_GT& PG)
+  {// output the particle group into a binary `.bpg' file. for each line {double,double,float}. no tag.
+    #pragma pack(1)
+    struct temp_P{
+      double x,y;
+      float Dir;
+    };
+    #pragma pack()
+
+    vector<temp_P> temp_PG(PG.size());
+    for( int i=0 ; i<temp_PG.size() ; i++ ){
+      temp_PG[i].x=PG[i].Pos.real();
+      temp_PG[i].y=PG[i].Pos.imag();
+      temp_PG[i].Dir=PG[i].Dir;
+    }
+
+    std::ofstream outfile(Filename, std::ios::binary);
+    if (!outfile.is_open()){
+      std::cerr << "Error: Failed to open file " << Filename << std::endl;
+      throw std::runtime_error("In FileIO::OutParticleVec_Bin.");
+    }
+
+    //first the line number of the file
+    const size_t size = temp_PG.size();
+    outfile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+    //second all the data
+    outfile.write(reinterpret_cast<const char*>(temp_PG.data()), size*sizeof(temp_P));
+
+    if (!outfile.good()){
+        std::cerr << "Error: Failed to write data to " << Filename << std::endl;
+        throw std::runtime_error("In FileIO::OutParticleVec_Bin.");
+    }
+
+    outfile.close();
+  }
+
+  PolarParticle2D_GT InParticleVec_Bin(const string& Filename)
+  {
+    #pragma pack(1)
+    struct temp_P{
+      double x,y;
+      float Dir;
+    };
+    #pragma pack()
+
+    std::ifstream infile(Filename, std::ios::binary);
+    if (!infile.is_open()) {
+        std::cerr << "Error: Failed to open file " << Filename << std::endl;
+        throw std::runtime_error("In FileIO::InParticleVec_Bin.");
+    }
+
+    size_t size;
+    infile.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+
+    vector<temp_P> temp_PG(size);
+    infile.read(reinterpret_cast<char*>(temp_PG.data()), size * sizeof(temp_P));
+
+    PolarParticle2D_GT ansPG(size);
+    for( int i=0 ; i<size ; i++ )
+      ansPG[i]=PolarParticle2D(temp_PG[i].x+ii*temp_PG[i].y,(double) temp_PG[i].Dir);
+
+    if (!infile.good()) {
+      std::cerr << "Error: Failed to read data from " << Filename << std::endl;
+      throw std::runtime_error("In FileIO::InParticleVec_Bin.");
+    }
+    infile.close();
+
+    return ansPG;
   }
   
 };
