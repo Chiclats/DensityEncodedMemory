@@ -1,5 +1,5 @@
 /*--------------------
-ver 250201
+ver 250204
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -117,6 +117,8 @@ namespace FileIO{
   {
     ifstream fin;
     fin.open(Filename);
+    if(not fin.is_open())
+      throw runtime_error("In FileIO::InParticleVec. Failed to open the file.");
     
     vector<PolarParticle2D> AnsVec;
     PolarParticle2D ptc;
@@ -163,6 +165,8 @@ namespace FileIO{
   {
     ofstream fout;
     fout.open(Filename);
+    if(not fout.is_open())
+      throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
 
     fout<<fixed<<setprecision(DoublePrecession);
     
@@ -180,6 +184,9 @@ namespace FileIO{
   {
     ofstream fout;
     fout.open(Filename);
+    if(not fout.is_open())
+      throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+    
     for( int j=0 ; j<MeshedPG.size() ; j++ )
       for( int i=0 ; i<MeshedPG[j].size() ; i++){
 	fout<<setprecision(DoublePrecession)<<real(MeshedPG[j][i].Pos)<<' '<<imag(MeshedPG[j][i].Pos)<<' '<<MeshedPG[j][i].Dir;

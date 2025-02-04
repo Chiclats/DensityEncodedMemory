@@ -1,5 +1,5 @@
 /*--------------------
-ver 240912
+ver 250204
 --------------------*/
 
 #ifndef BasicTools_hpp
@@ -117,6 +117,8 @@ namespace FileIO
    //ATTENTION cannot use Type=int to input Type=double 
     ifstream fin;
     fin.open(Filename);
+    if(not fin.is_open())
+      throw runtime_error("In FileIO::InVec. Failed to open the file.");
     
     vector<Type> AnsVec;
     Type datum;
@@ -136,6 +138,8 @@ namespace FileIO
     
     ifstream fin;
     fin.open(Filename);
+    if(not fin.is_open())
+      throw runtime_error("In FileIO::InMat. Failed to open the file.");
     
     Type datum;
     while(fin>>datum){
@@ -158,6 +162,9 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
+    if(not fout.is_open())
+      throw runtime_error("In FileIO::OutVec. Failed to open the file.");
+    
     for( int i=0 ; i<List.size() ; i++)
       fout<<setprecision(DoublePrecession)<<List[i]<<endl;
     fout.close();
@@ -169,6 +176,9 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
+    if(not fout.is_open())
+      throw runtime_error("In FileIO::OutVecPair. Failed to open the file.");
+    
     for( int i=0 ; i<List.size() ; i++)
       fout<<setprecision(DoublePrecession)<<List[i].first<<' '<<List[i].second<<endl;
     fout.close();
@@ -180,6 +190,9 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
+    if(not fout.is_open())
+      throw runtime_error("In FileIO::OutMatPair. Failed to open the file.");
+    
     for( auto v : List){
       for(auto p : v) fout<<setprecision(DoublePrecession)<<p.first<<' '<<p.second<<"\t";
       fout<<endl;
@@ -193,6 +206,9 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
+    if(not fout.is_open())
+      throw runtime_error("In FileIO::OutMat. Failed to open the file.");
+    
     for( int i=0 ; i<Mat.size() ; i++){
       for(int j=0; j<Mat[0].size(); j++)
 	fout<<setprecision(DoublePrecession)<<Mat[i][j]<<' ';

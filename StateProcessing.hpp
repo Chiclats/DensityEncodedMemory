@@ -1,5 +1,5 @@
 /*--------------------
-ver 241220
+ver 250204
 --------------------*/
 
 #ifndef StateProcessing_hpp
@@ -101,7 +101,27 @@ namespace StateProcessing{
       NewY=PG[i].Pos.imag();
       NewDir=pi-PG[i].Dir;
       NewDir=(NewDir<0)?(NewDir+2*pi):NewDir;
-      AnsPG.push_back(Make_PolarParticle2D(NewX,NewY,NewDir));
+      AnsPG.push_back(PolarParticle2D(NewX+ii*NewY,NewDir));
+    }
+
+    return AnsPG;
+  }
+
+  vector<PolarParticle2D> FlipParticleGroupRightUp(const vector<PolarParticle2D>& PG,double SystemSize_X,double SystemSize_Y)
+  {// (1,2) pi/6 => (2,1) pi/3, requiring SystemSize_X==SystemSize_Y
+
+    if(SystemSize_X!=SystemSize_Y)
+      throw runtime_error("In StateProcessing::FlipParticleGroupRightUp, the system should be square.");
+    
+    vector<PolarParticle2D> AnsPG;
+    double NewX,NewY,NewDir;
+    for( int i=0 ; i<PG.size() ; i++ ){
+      NewX=PG[i].Pos.imag();
+      NewY=PG[i].Pos.real();
+      NewDir=pi/2-PG[i].Dir;
+      while(NewDir<0) NewDir+=2*pi;
+      while(NewDir>=2*pi) NewDir-=2*pi;
+      AnsPG.push_back(PolarParticle2D(NewX+ii*NewY,NewDir));
     }
 
     return AnsPG;
