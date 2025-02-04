@@ -108,10 +108,7 @@ namespace StateProcessing{
   }
 
   vector<PolarParticle2D> FlipParticleGroupRightUp(const vector<PolarParticle2D>& PG,double SystemSize_X,double SystemSize_Y)
-  {// (1,2) pi/6 => (2,1) pi/3, requiring SystemSize_X==SystemSize_Y
-
-    if(SystemSize_X!=SystemSize_Y)
-      throw runtime_error("In StateProcessing::FlipParticleGroupRightUp, the system should be square.");
+  {// (1,2) pi/6 => (2,1) pi/3
     
     vector<PolarParticle2D> AnsPG;
     double NewX,NewY,NewDir;
