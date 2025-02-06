@@ -1,5 +1,5 @@
 /*--------------------
-ver 250204
+ver 250206
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -215,10 +215,8 @@ namespace FileIO{
     }
 
     std::ofstream outfile(Filename, std::ios::binary);
-    if (!outfile.is_open()){
-      std::cerr << "Error: Failed to open file " << Filename << std::endl;
+    if (!outfile.is_open())
       throw std::runtime_error("In FileIO::OutParticleVec_Bin.");
-    }
 
     //first the line number of the file
     const size_t size = temp_PG.size();
