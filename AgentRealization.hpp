@@ -1,5 +1,5 @@
 /*--------------------
-ver 250206
+ver 250222
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -165,8 +165,11 @@ namespace FileIO{
   {
     ofstream fout;
     fout.open(Filename);
-    if(not fout.is_open())
-      throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+    if(not fout.is_open()){
+      //throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+      cerr<<"In FileIO::OutParticleVec. Failed to open the file."<<endl;
+      return;
+    }
 
     fout<<fixed<<setprecision(DoublePrecession);
     
@@ -184,8 +187,11 @@ namespace FileIO{
   {
     ofstream fout;
     fout.open(Filename);
-    if(not fout.is_open())
-      throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+    if(not fout.is_open()){
+      //throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+      cerr<<"In FileIO::OutParticleVec. Failed to open the file."<<endl;
+      return;
+    }
     
     for( int j=0 ; j<MeshedPG.size() ; j++ )
       for( int i=0 ; i<MeshedPG[j].size() ; i++){
@@ -215,8 +221,11 @@ namespace FileIO{
     }
 
     std::ofstream outfile(Filename, std::ios::binary);
-    if (!outfile.is_open())
-      throw std::runtime_error("In FileIO::OutParticleVec_Bin.");
+    if (!outfile.is_open()){
+      //throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+      cerr<<"In FileIO::OutParticleVec_Bin. Failed to open the file."<<endl;
+      return;
+    }
 
     //first the line number of the file
     const size_t size = temp_PG.size();

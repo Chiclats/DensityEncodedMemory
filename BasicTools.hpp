@@ -1,5 +1,5 @@
 /*--------------------
-ver 250204
+ver 250222
 --------------------*/
 
 #ifndef BasicTools_hpp
@@ -162,8 +162,11 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
-    if(not fout.is_open())
-      throw runtime_error("In FileIO::OutVec. Failed to open the file.");
+    if(not fout.is_open()){
+      //throw runtime_error("In FileIO::OutVec. Failed to open the file.");
+      cerr<<"In FileIO::OutVec. Failed to open the file.\n";
+      return;
+    }
     
     for( int i=0 ; i<List.size() ; i++)
       fout<<setprecision(DoublePrecession)<<List[i]<<endl;
@@ -176,8 +179,11 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
-    if(not fout.is_open())
-      throw runtime_error("In FileIO::OutVecPair. Failed to open the file.");
+    if(not fout.is_open()){
+      //throw runtime_error("In FileIO::OutVec. Failed to open the file.");
+      cerr<<"In FileIO::OutVecPair. Failed to open the file.\n";
+      return;
+    }
     
     for( int i=0 ; i<List.size() ; i++)
       fout<<setprecision(DoublePrecession)<<List[i].first<<' '<<List[i].second<<endl;
@@ -190,8 +196,11 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
-    if(not fout.is_open())
-      throw runtime_error("In FileIO::OutMatPair. Failed to open the file.");
+    if(not fout.is_open()){
+      //throw runtime_error("In FileIO::OutMatPair. Failed to open the file.");
+      cerr<<"In FileIO::OutMatPair. Failed to open the file.\n";
+      return;
+    }
     
     for( auto v : List){
       for(auto p : v) fout<<setprecision(DoublePrecession)<<p.first<<' '<<p.second<<"\t";
@@ -206,8 +215,11 @@ namespace FileIO
   {
     ofstream fout;
     fout.open(Filename);
-    if(not fout.is_open())
-      throw runtime_error("In FileIO::OutMat. Failed to open the file.");
+    if(not fout.is_open()){
+      //throw runtime_error("In FileIO::OutMat. Failed to open the file.");
+      cerr<<"In FileIO::OutMat. Failed to open the file.\n";
+      return;
+    }
     
     for( int i=0 ; i<Mat.size() ; i++){
       for(int j=0; j<Mat[0].size(); j++)
