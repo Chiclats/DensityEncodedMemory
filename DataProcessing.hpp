@@ -1,5 +1,5 @@
 /*--------------------
-ver 240805
+ver 250305
 --------------------*/
 
 #ifndef DataProcessing_hpp
@@ -336,6 +336,46 @@ namespace DataProcessing
     }
 
     return Ans;
+  }
+
+  vector<int> StatDirDistribution(const PolarParticle2D_GT& PG,const int& BinNum)
+  {//Divide 2*pi into BinNum bins, and count the number of particles whose Dir is in a bin
+    //Attention: 0 <= Dir <= 2*pi
+    const double BinSize=2*pi/BinNum;
+    vector<int> AnsVec(BinNum,0);
+    int n;
+    for( auto p : PG ){
+      if(p.Dir<0 or 2*pi<p.Dir){
+	cerr<<'('<<p.Pos.real()<<','<<p.Pos.imag()<<')'<<p.Dir<<endl;
+	throw(runtime_error("In StatDirDistribution: Illegal value of Dir."));
+      }
+			  
+      n=floor(p.Dir/BinSize);
+      AnsVec[(n>=BinNum)?(BinNum-1):n]++;
+    }
+
+    return AnsVec;
+  }
+
+  vector<vector<int>> StatDirJumpingMat(const PolarParticle2D_GT& PG1,const PolarParticle2D_GT& PG2,const int& BinNum)
+  {//Divide 2*pi into BinNum bins, and count the number of particles who in PG1 at Bin_i and in PG2 at Bin_j
+    //Attention: 0 <= Dir <= 2*pi
+    if(PG1.size()!=PG2.size())
+      throw(runtime_error("In StatDirJumpingMat: PG1 and PG2 is of different length."));
+  
+    const double BinSize=2*pi/BinNum;
+    vector<vector<int>> AnsMat(BinNum,vector<int>(BinNum,0));
+
+    int i,j;
+    for( int i_p=0 ; i_p<PG1.size() ; i_p++ ){
+      if(PG1[i_p].Dir<0 or 2*pi<PG1[i_p].Dir or PG2[i_p].Dir<0 or 2*pi<PG2[i_p].Dir)
+	throw(runtime_error("In StatDirJumpingMat: Illegal value of Dir."));
+
+      i=floor(PG1[i_p].Dir/BinSize),j=floor(PG2[i_p].Dir/BinSize);
+      AnsMat[(i>=BinNum)?(BinNum-1):i][(j>=BinNum)?(BinNum-1):j]++;
+    }
+  
+    return AnsMat;
   }
   
   //----------Not Recommended----------
