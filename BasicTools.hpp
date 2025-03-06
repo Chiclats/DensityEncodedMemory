@@ -1,5 +1,5 @@
 /*--------------------
-ver 250222
+ver 250306
 --------------------*/
 
 #ifndef BasicTools_hpp
@@ -117,8 +117,10 @@ namespace FileIO
    //ATTENTION cannot use Type=int to input Type=double 
     ifstream fin;
     fin.open(Filename);
-    if(not fin.is_open())
+    if(not fin.is_open()){
+      cerr<<"Filename: "<<Filename<<endl; 
       throw runtime_error("In FileIO::InVec. Failed to open the file.");
+    }
     
     vector<Type> AnsVec;
     Type datum;
@@ -138,8 +140,10 @@ namespace FileIO
     
     ifstream fin;
     fin.open(Filename);
-    if(not fin.is_open())
+    if(not fin.is_open()){
+      cerr<<"Filename: "<<Filename<<endl;
       throw runtime_error("In FileIO::InMat. Failed to open the file.");
+    }
     
     Type datum;
     while(fin>>datum){
@@ -163,7 +167,7 @@ namespace FileIO
     ofstream fout;
     fout.open(Filename);
     if(not fout.is_open()){
-      //throw runtime_error("In FileIO::OutVec. Failed to open the file.");
+      cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutVec. Failed to open the file.\n";
       return;
     }
@@ -180,7 +184,7 @@ namespace FileIO
     ofstream fout;
     fout.open(Filename);
     if(not fout.is_open()){
-      //throw runtime_error("In FileIO::OutVec. Failed to open the file.");
+      cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutVecPair. Failed to open the file.\n";
       return;
     }
@@ -197,7 +201,7 @@ namespace FileIO
     ofstream fout;
     fout.open(Filename);
     if(not fout.is_open()){
-      //throw runtime_error("In FileIO::OutMatPair. Failed to open the file.");
+      cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutMatPair. Failed to open the file.\n";
       return;
     }
@@ -216,7 +220,7 @@ namespace FileIO
     ofstream fout;
     fout.open(Filename);
     if(not fout.is_open()){
-      //throw runtime_error("In FileIO::OutMat. Failed to open the file.");
+      cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutMat. Failed to open the file.\n";
       return;
     }

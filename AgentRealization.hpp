@@ -1,5 +1,5 @@
 /*--------------------
-ver 250222
+ver 250306
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -117,8 +117,10 @@ namespace FileIO{
   {
     ifstream fin;
     fin.open(Filename);
-    if(not fin.is_open())
+    if(not fin.is_open()){
+      cerr<<"Filename: "<<Filename<<endl;
       throw runtime_error("In FileIO::InParticleVec. Failed to open the file.");
+    }
     
     vector<PolarParticle2D> AnsVec;
     PolarParticle2D ptc;
@@ -159,14 +161,14 @@ namespace FileIO{
     
     fin.close();
     return AnsVec;
-  }//checked 240501
+  }
   
   void OutParticleVec(string Filename,PolarParticle2D_GT PG,bool WriteTag=true)
   {
     ofstream fout;
     fout.open(Filename);
     if(not fout.is_open()){
-      //throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+      cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutParticleVec. Failed to open the file."<<endl;
       return;
     }
@@ -188,7 +190,7 @@ namespace FileIO{
     ofstream fout;
     fout.open(Filename);
     if(not fout.is_open()){
-      //throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+      cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutParticleVec. Failed to open the file."<<endl;
       return;
     }
@@ -222,7 +224,7 @@ namespace FileIO{
 
     std::ofstream outfile(Filename, std::ios::binary);
     if (!outfile.is_open()){
-      //throw runtime_error("In FileIO::OutParticleVec. Failed to open the file.");
+      cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutParticleVec_Bin. Failed to open the file."<<endl;
       return;
     }
