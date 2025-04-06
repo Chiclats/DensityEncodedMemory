@@ -1,5 +1,5 @@
 /*--------------------
-ver 250306
+ver 250406
 --------------------*/
 
 #ifndef BasicTools_hpp
@@ -225,11 +225,12 @@ namespace FileIO
       return;
     }
     
-    for( int i=0 ; i<Mat.size() ; i++){
-      for(int j=0; j<Mat[0].size(); j++)
-	fout<<setprecision(DoublePrecession)<<Mat[i][j]<<' ';
-      fout<<endl;
+    for( auto v : Mat ){
+      for( auto p : v )
+	fout<<setprecision(DoublePrecession)<<p<<' ';
+      fout<<"\n";
     }
+    
     fout.close();
     return;
   }
