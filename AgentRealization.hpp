@@ -1,5 +1,5 @@
 /*--------------------
-ver 250306
+ver 250406
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -8,10 +8,16 @@ ver 250306
 #include<bits/stdc++.h>
 #include"BasicTools.hpp"
 
+// #include <cstring>
+// #include <cerrno>
+// #ifdef _WIN32
+//   #include <windows.h>
+// #endif
+
 using namespace std;
 
 //----------PolarParticle2D---------------
-
+ 
 class PolarParticle2D
 {
 public:
@@ -227,6 +233,61 @@ namespace FileIO{
       cerr<<"Filename: "<<Filename<<endl;
       cerr<<"In FileIO::OutParticleVec_Bin. Failed to open the file."<<endl;
       return;
+    }
+
+    //first the line number of the file
+    const size_t size = temp_PG.size();
+    outfile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+    //second all the data
+    outfile.write(reinterpret_cast<const char*>(temp_PG.data()), size*sizeof(temp_P));
+
+    if (!outfile.good()){
+        std::cerr << "Error: Failed to write data to " << Filename << std::endl;
+        throw std::runtime_error("In FileIO::OutParticleVec_Bin.");
+    }
+
+    outfile.close();
+  }
+
+  void OutParticleVec_Bin_Robust(const string& Filename,const PolarParticle2D_GT& PG)
+  {// output the particle group into a binary `.bpg' file. for each line {double,double,float}. no tag.
+    #pragma pack(1)
+    struct temp_P{
+      double x,y;
+      float Dir;
+    };
+    #pragma pack()
+
+    vector<temp_P> temp_PG(PG.size());
+    for( int i=0 ; i<temp_PG.size() ; i++ ){
+      temp_PG[i].x=PG[i].Pos.real();
+      temp_PG[i].y=PG[i].Pos.imag();
+      temp_PG[i].Dir=PG[i].Dir;
+    }
+
+    std::ofstream outfile(Filename, std::ios::binary);
+    int Attempts=0;
+    while(!outfile.is_open()){
+      Attempts++;
+      
+      cerr<<"Filename: "<<Filename<<endl;
+      cerr<<"In FileIO::OutParticleVec_Bin. Failed to open the file. Attempt="<<Attempts<<endl;
+
+      //system error output
+      // #ifdef _WIN32
+      //   std::cerr << "Error code: " << GetLastError() << std::endl;
+      // #else
+      //   std::cerr << "Error: " << strerror(errno) << std::endl;
+      // #endif
+
+      if(Attempts==3){
+	FileIO::OutParticleVec(Filename+".txt",PG);	
+	return;
+      }
+	
+      // play for a while before next attempt
+      int i_Temp;
+      for( int j_Temp=0 ; j_Temp<1e7 ; j_Temp++ ) i_Temp=j_Temp;
     }
 
     //first the line number of the file
