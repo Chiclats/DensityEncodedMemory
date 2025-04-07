@@ -1,5 +1,5 @@
 /*--------------------
-ver 250406
+ver 250407
 --------------------*/
 
 #ifndef AgentRealization_hpp
@@ -8,11 +8,8 @@ ver 250406
 #include<bits/stdc++.h>
 #include"BasicTools.hpp"
 
-// #include <cstring>
-// #include <cerrno>
-// #ifdef _WIN32
-//   #include <windows.h>
-// #endif
+#include <cstring>
+#include <cerrno>
 
 using namespace std;
 
@@ -274,11 +271,7 @@ namespace FileIO{
       cerr<<"In FileIO::OutParticleVec_Bin. Failed to open the file. Attempt="<<Attempts<<endl;
 
       //system error output
-      // #ifdef _WIN32
-      //   std::cerr << "Error code: " << GetLastError() << std::endl;
-      // #else
-      //   std::cerr << "Error: " << strerror(errno) << std::endl;
-      // #endif
+      std::cerr << "Error: " << strerror(errno) << std::endl;
 
       if(Attempts==3){
 	FileIO::OutParticleVec(Filename+".txt",PG);	
