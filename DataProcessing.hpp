@@ -1,5 +1,6 @@
 /*--------------------
-ver 250305
+ver 250410
+A collection of data processing functions.
 --------------------*/
 
 #ifndef DataProcessing_hpp
@@ -17,10 +18,16 @@ ver 250305
 using namespace std;
 
 namespace DataProcessing
-{//a collection of data processing functions
+{//Tag processing: manipulations related to PolarParticle2D:.Tag
 
-  vector<vector<PolarParticle2D>> ParticleGroupDivision(vector<PolarParticle2D> PG,int TagNum)
+  vector<vector<PolarParticle2D>> ParticleGroupDivision(const vector<PolarParticle2D>& PG,int TagNum=-1)
   {//Divide a PG with particles of different tags into several PG, Tag should always start from 1 and be integers
+   //-1 denotes to automatically detect TagNum
+
+    if(TagNum==-1) // detect TagNum
+      for( auto p : PG )
+	TagNum=(p.Tag>TagNum)?p.Tag:TagNum;
+    
     if(TagNum==1)
       return {PG};
     
@@ -29,7 +36,30 @@ namespace DataProcessing
       ansVecPG[p.Tag-1].push_back(p);
       
     return ansVecPG;
-  }//checked 240502
+  }
+
+  vector<PolarParticle2D> PutIndexToTag(vector<PolarParticle2D> PG)
+  {//Set the Tag slot to be the index of particles in PG
+    for( int i=0 ; i<PG.size() ; i++ )
+      PG[i].Tag=i;
+    return PG;
+  }
+
+  vector<vector<PolarParticle2D>> PutIndexToTag(vector<vector<PolarParticle2D>> MeshedPG)
+  {//Set the Tag slot to be the index of particles in MeshedPG
+    int cnt=0;
+    for( int i=0 ; i<MeshedPG.size() ; i++ )
+      for( int j=0 ; j<MeshedPG[i].size() ; j++ ){
+	MeshedPG[i][j].Tag=cnt;
+	cnt++;
+      }
+    return MeshedPG;
+  }
+
+};
+
+namespace DataProcessing
+{//Order parameter calculating
 
   pair<double,double> NFoldOrderParameter(vector<PolarParticle2D> PG,double fold)
   {//calculate the n-fold order parameter of a PG
@@ -70,23 +100,10 @@ namespace DataProcessing
     return make_tuple(modu,dir);
   }
 
-  vector<PolarParticle2D> PutIndexToTag(vector<PolarParticle2D> PG)
-  {//Set the Tag slot to be the index of particles in PG
-    for( int i=0 ; i<PG.size() ; i++ )
-      PG[i].Tag=i;
-    return PG;
-  }
+};
 
-  vector<vector<PolarParticle2D>> PutIndexToTag(vector<vector<PolarParticle2D>> MeshedPG)
-  {//Set the Tag slot to be the index of particles in MeshedPG
-    int cnt=0;
-    for( int i=0 ; i<MeshedPG.size() ; i++ )
-      for( int j=0 ; j<MeshedPG[i].size() ; j++ ){
-	MeshedPG[i][j].Tag=cnt;
-	cnt++;
-      }
-    return MeshedPG;
-  }
+namespace DataProcessing
+{//closest neighbors calculating
   
   vector<pair<complex<int>,double>> _CoorPairList_Initialization(){//initialize CoorPairList
     vector<pair<complex<int>,double>> CoorPairList;
@@ -180,18 +197,139 @@ namespace DataProcessing
     return AnsVec;
   }
 
+};
+
+namespace DataProcessing::PositionCorrelationFunctions
+{//two-poing correlation functions
+
+  complex<double> RelativePos_Periodic(PolarParticle2D p1,PolarParticle2D p2,double SystemSize_X,double SystemSize_Y)
+  {//Relative Position p2-p1, periodic boundary conditions
+    double
+      dx=p2.Pos.real()-p1.Pos.real(),
+      dy=p2.Pos.imag()-p1.Pos.imag();
+
+    if(abs(dx-SystemSize_X)<abs(dx) and abs(dx-SystemSize_X)<abs(dx+SystemSize_X))
+      dx-=SystemSize_X;
+    else if(abs(dx+SystemSize_X)<abs(dx))
+      dx+=SystemSize_X;
+
+    if(abs(dy-SystemSize_Y)<abs(dy) and abs(dy-SystemSize_Y)<abs(dy+SystemSize_Y))
+      dy-=SystemSize_Y;
+    else if(abs(dy+SystemSize_Y)<abs(dy))
+      dy+=SystemSize_Y;
+
+    return dx+ii*dy;
+  }
+
+  complex<double> RotateRelativePos(complex<double> RelativePos,double Theta)
+  {//rotate the relative position counterclockwise
+    return RelativePos*exp(ii*Theta);
+  }
+
+  int IndexShift(const int& index_From,const int& DX,const int& DY,const int& BoxNum_X,const int& BoxNum_Y)
+  {//in the BoxInfo system, decide the box index from index_From + DX + DY * ii
+   //ATTENTION: |DX|<BoxNum_X and |DY|<BoxNum_Y
+    int
+	n_X=index_From%BoxNum_X,
+	n_Y=index_From/BoxNum_X,
+	new_n_X=(n_X+DX+BoxNum_X)%BoxNum_X,
+	new_n_Y=(n_Y+DY+BoxNum_Y)%BoxNum_Y;
+      return new_n_X+new_n_Y*BoxNum_X;
+  }
+  
+  vector<complex<double>> RelativePosListAroundAPosition(const complex<double>& Center,
+							 const vector<vector<PolarParticle2D>>& MeshedPG,
+							 const vector<pair<vector<double>,vector<int>>>& BoxInfo,
+							 const tuple<double,double,double,int,int>& Parameters,
+							 //{SystemSize_X,SystemSize_Y,CharLength,BoxNum_X,BoxNum_Y}
+							 const int& GridNumConsidered /* an even number */)
+  {//list out relative positions of neighboring particles around Center
+    vector<complex<double>> AnsVec;
+
+    const auto [SystemSize_X,SystemSize_Y,CharLength,BoxNum_X,BoxNum_Y]=Parameters;
+    const PolarParticle2D p_Center(Center,0.); //an imaginary particle at Center
+    const int index_From=BoxMeshing_2D::DecideBoxIndex(p_Center,SystemSize_X,SystemSize_Y,CharLength);
+    const double MaxXYDist=GridNumConsidered/2*CharLength;
+
+    //collect all particles in (GridNumConsidered+1)*(GridNumConsidered+1)
+    vector<vector<PolarParticle2D>> PortionOfMeshedPG;
+    for( int i_Shift_X=-GridNumConsidered/2 ; i_Shift_X<=GridNumConsidered/2 ; i_Shift_X++ )
+      for( int i_Shift_Y=-GridNumConsidered/2 ; i_Shift_Y<=GridNumConsidered/2 ; i_Shift_Y++ )
+	PortionOfMeshedPG.push_back(MeshedPG[IndexShift(index_From,i_Shift_X,i_Shift_Y,BoxNum_X,BoxNum_Y)]);
+    auto Gathered_PortionOfMeshedPG=BoxMeshing_2D::Gathering(PortionOfMeshedPG);
+
+    //calculate relative position	
+    for( auto pp : Gathered_PortionOfMeshedPG ){
+      complex<double> RelativePos_=RelativePos_Periodic(p_Center,pp,SystemSize_X,SystemSize_Y);
+      double Distance=abs(RelativePos_);
+      if(abs(RelativePos_.real())<MaxXYDist and abs(RelativePos_.imag())<MaxXYDist and Distance!=0)
+	AnsVec.push_back(RelativePos_);
+    }
+
+    return AnsVec;
+  }
+
+  vector<vector<double>> PositionCorrelation_TwoPG(const PolarParticle2D_GT& PG_Center,
+						   const PolarParticle2D_GT& PG_Target,
+						   const tuple<double,double,double,double,double>& Parameters,
+						   //GridSize RangeConsidered SystemSize_X SystemSize_Y CharLength(a factor of RangeConsidered)
+						   const double& RotatingAngle=0,
+						   const int& SamplePer=1 /*a sample per SamplePer particles*/)
+  {//calculate p(r in PG_Target | r in PG_Center)
+    
+    const auto [GridSize,RangeConsidered,SystemSize_X,SystemSize_Y,CharLength]=Parameters;
+    const auto BoxInfo=BoxMeshing_2D::BoxInfo(SystemSize_X,SystemSize_Y,CharLength);
+    const auto Parameters_Inner=BoxMeshing_2D::UnzipBoxInfo(BoxInfo);
+    const auto MeshedPG_Target=BoxMeshing_2D::Meshing(PG_Target,SystemSize_X,SystemSize_Y,CharLength);
+    const int GridNumConsidered=RangeConsidered/CharLength;
+
+    //runtime error checking
+    if(RangeConsidered/2/GridSize-floor(RangeConsidered/2/GridSize)>1e-10){
+      cerr<<"RangeConsidered: "<<RangeConsidered<<" GridSize: "<<GridSize<<endl;
+      throw(runtime_error("GridSize is not a factor of RangeConsidered / 2"));
+    }
+    if(RangeConsidered/2/CharLength-floor(RangeConsidered/2/CharLength)>1e-10){
+      cerr<<"RangeConsidered: "<<RangeConsidered<<" CharLength: "<<CharLength<<endl;
+      throw(runtime_error("CharLength is not a factor of RangeConsidered / 2"));
+    }
+
+    //counting RelativePos
+    vector<vector<double>> ansMat(int(RangeConsidered/GridSize),vector<double>(int(RangeConsidered/GridSize),0));
+    
+    for( int i_Center=0 ; i_Center<PG_Center.size() ; i_Center+=SamplePer ){
+      auto RelativePosList=RelativePosListAroundAPosition(PG_Center[i_Center].Pos,MeshedPG_Target,BoxInfo,Parameters_Inner,GridNumConsidered);
+
+      for( auto RelativePos : RelativePosList ){
+	if(norm(RelativePos)>=RangeConsidered*RangeConsidered/4.) continue;
+
+	RelativePos=RotateRelativePos(RelativePos,RotatingAngle);
+	const int Index_X=(RelativePos.real()+RangeConsidered/2)/GridSize,Index_Y=(RelativePos.imag()+RangeConsidered/2)/GridSize;
+	ansMat[Index_X][Index_Y]++;
+      }
+    }
+
+    //rescaling to pdf
+    const int NumSampledParticles=ceil(PG_Center.size()/SamplePer);
+    for( int i_X=0 ; i_X<ansMat.size() ; i_X++ )
+      for( int i_Y=0 ; i_Y<ansMat[0].size() ; i_Y++ )
+	ansMat[i_X][i_Y]/=(NumSampledParticles*GridSize*GridSize);
+
+    return ansMat;
+  }
+		   
+
+};
+
+namespace DataProcessing
+{
   vector<complex<double>> RelativePosList(const vector<vector<PolarParticle2D>>& MeshedPG,
 					  const vector<pair<vector<double>,vector<int>>>& BoxInfo,
-					  int GridNumConsidered, /* an even number */
-					  int SampleRatio /*a sample per SampleRatio particles*/) 
+					  const int& GridNumConsidered, /* an even number */
+					  const int& SampleRatio /*a sample per SampleRatio particles*/) 
   {//List out the relative position of each two particles, in a GridNumConsidered*GridNumConsidered box, peripheral particles are discarded
     vector<complex<double>> AnsVec;
 
-    double SystemSize_X=BoxInfo[BoxInfo.size()-1].first[1];
-    double SystemSize_Y=BoxInfo[BoxInfo.size()-1].first[3];
-    int N_X=BoxInfo[0].second[0]+1;
-    int N_Y=BoxInfo[0].second[2]/N_X+1;
-    double CharLength=BoxInfo[0].first[1]-BoxInfo[0].first[0];
+    auto [SystemSize_X,SystemSize_Y,CharLength,N_X,N_Y]=BoxMeshing_2D::UnzipBoxInfo(BoxInfo);
     double MaxXYDist=GridNumConsidered/2*CharLength;
 
     auto IndexShift=[N_X,N_Y](int i,complex<int> Coor)->int{
@@ -376,65 +514,6 @@ namespace DataProcessing
     }
   
     return AnsMat;
-  }
-  
-  //----------Not Recommended----------
-
-  vector<pair<PolarParticle2D,PolarParticle2D>> ClosestNeighborList(vector<vector<PolarParticle2D>> MeshedPG,
-								    vector<pair<vector<double>,vector<int>>> BoxInfo,
-								    function<double(PolarParticle2D,PolarParticle2D)> DistanceOfTwoParticles)
-  {//List out the closest particle of each particle: {{PolarParticle2D,Closest PolarParticle2D},...}
-    vector<pair<PolarParticle2D,PolarParticle2D>> AnsVec;
-
-    double CharLength=BoxInfo[0].first[1]-BoxInfo[0].first[0];
-    int N_X=BoxInfo[0].second[0]+1;
-    int N_Y=BoxInfo[0].second[2]/N_X+1;
-
-    auto IndexShift=[N_X,N_Y](int i,complex<int> Coor)->int{
-      int
-	n_X=i%N_X,
-	n_Y=i/N_X,
-	new_n_X=(n_X+Coor.real())%N_X,
-	new_n_Y=(n_Y+Coor.imag())%N_Y;
-      if(new_n_X<0) new_n_X+=N_X;
-      if(new_n_Y<0) new_n_Y+=N_Y;
-      return new_n_X+new_n_Y*N_X;
-    };
-    
-    for( int i_Box=0 ; i_Box<BoxInfo.size() ; i_Box++ )
-      for( auto p : MeshedPG[i_Box] ){
-
-	//find a near enough particle
-
-	int cnt=0;
-	auto Coor=_CoorPairList[cnt].first;
-	while(MeshedPG[IndexShift(i_Box,Coor)].size()==0 or
-	      (MeshedPG[IndexShift(i_Box,Coor)].size()==1 and DistanceOfTwoParticles(MeshedPG[IndexShift(i_Box,Coor)][0],p)==0)){
-	  cnt++;
-	  Coor=_CoorPairList[cnt].first;
-	}
-
-	PolarParticle2D NearEnoughP;
-	if(DistanceOfTwoParticles(MeshedPG[IndexShift(i_Box,Coor)][0],p)!=0) NearEnoughP=MeshedPG[IndexShift(i_Box,Coor)][0];
-	else NearEnoughP=MeshedPG[IndexShift(i_Box,Coor)][1];
-	double dist=DistanceOfTwoParticles(NearEnoughP,p);
-	
-	//find a the closest particle
-
-	for( int j_Box=cnt ; _CoorPairList[j_Box].second*CharLength<dist ; j_Box++ ){
-	  auto Coor=_CoorPairList[j_Box].first;
-	  
-	  for( auto pp : MeshedPG[IndexShift(i_Box,Coor)] )
-	    if(DistanceOfTwoParticles(pp,p)<dist and DistanceOfTwoParticles(pp,p)!=0){
-	      dist=DistanceOfTwoParticles(pp,p);
-	      NearEnoughP=pp;
-	    }
-	}
-
-	AnsVec.push_back({p,NearEnoughP});
-      }
-
-    return AnsVec;
   }
 
 };
