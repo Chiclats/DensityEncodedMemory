@@ -1,5 +1,5 @@
 /*----------
-  ver 250415
+  ver 250417
   ----------*/
 
 #ifndef ParticleSimulationHeaders_hpp
@@ -15,6 +15,7 @@
 #include"./CollectiveMotionRealization.hpp"
 #include"./InteractionRealization.hpp"
 #include"./DataProcessing.hpp"
+#include"./ClusterUnionFind.hpp"
 
 #include"./ReducedModel.hpp"
 
