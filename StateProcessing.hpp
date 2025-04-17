@@ -1,5 +1,5 @@
 /*--------------------
-ver 250204
+ver 250417
 --------------------*/
 
 #ifndef StateProcessing_hpp
@@ -141,7 +141,7 @@ using BoxInfoT=vector<pair<vector<double>,vector<int>>>;
 namespace BoxMeshing_2D{
 
   template<typename Type>
-  vector<Type> Gathering(vector<vector<Type>> MeshedPG)
+  vector<Type> Gathering(const vector<vector<Type>>& MeshedPG)
   {//gather all particles in each small boxes
     vector<PolarParticle2D> AnsVec;
 
@@ -194,7 +194,7 @@ namespace BoxMeshing_2D{
     return AnsList;
   }
 
-  tuple<double,double,double,int,int> UnzipBoxInfo(BoxInfoT BoxInfo_)
+  tuple<double,double,double,int,int> UnzipBoxInfo(const BoxInfoT& BoxInfo_)
   {//Derive parameters from BoxInfo, return (SystemSize_X,SystemSize_Y,CharLength,BoxNum_X,BoxNum_Y)
     double SystemSize_X=BoxInfo_[BoxInfo_.size()-1].first[1];
     double SystemSize_Y=BoxInfo_[BoxInfo_.size()-1].first[3];
@@ -222,7 +222,7 @@ namespace BoxMeshing_2D{
   }
 
   template<typename Type>
-  vector<vector<Type>> Meshing(vector<Type> list,double SystemSize_X,double SystemSize_Y,double CharLength)
+  vector<vector<Type>> Meshing(const vector<Type>& list,const double& SystemSize_X,const double& SystemSize_Y,const double& CharLength)
   {//Divide the system into many small boxes
   
     int Num_x=floor(SystemSize_X/CharLength);
@@ -231,6 +231,20 @@ namespace BoxMeshing_2D{
   
     for( int i=0 ; i<list.size() ; i++ )
       AnsList[DecideBoxIndex(list[i],SystemSize_X,SystemSize_Y,CharLength)].push_back(list[i]);
+  
+    return AnsList;
+  }
+
+  template<typename Type>
+  vector<vector<int>> MeshedIndex(const vector<Type>& list,const double& SystemSize_X,const double& SystemSize_Y,const double&CharLength)
+  {//Divide the system into many small boxes. Only indices are saved.
+
+    int Num_x=floor(SystemSize_X/CharLength);
+    int Num_y=floor(SystemSize_Y/CharLength);
+    vector<vector<int>> AnsList(Num_x*Num_y);
+  
+    for( int i=0 ; i<list.size() ; i++ )
+      AnsList[DecideBoxIndex(list[i],SystemSize_X,SystemSize_Y,CharLength)].push_back(i);
   
     return AnsList;
   }
