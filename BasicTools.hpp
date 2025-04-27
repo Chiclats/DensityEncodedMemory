@@ -1,5 +1,5 @@
 /*--------------------
-ver 250406
+ver 250427
 --------------------*/
 
 #ifndef BasicTools_hpp
@@ -158,6 +158,37 @@ namespace FileIO
     
     fin.close();
     
+    return AnsMat;
+  }
+
+  template<typename Type>
+  vector<vector<Type>> InMat_WithHeader(const string& Filename, const int& cols)
+  {//ignore header line
+    vector<vector<Type>> AnsMat;
+    vector<Type> TempVec(cols);
+    int TempInt = 0;
+    ifstream fin;
+    fin.open(Filename);
+    if (!fin.is_open()) {
+      cerr << "Filename: " << Filename << endl;
+      throw runtime_error("In FileIO::InMat. Failed to open the file.");
+    }
+
+    //input and ignore header line
+    string header;
+    getline(fin, header);
+    cout<<header<<endl;
+
+    Type datum;
+    while (fin >> datum) {
+      TempVec[TempInt] = datum;
+      TempInt++;
+      if (TempInt == cols) {
+	AnsMat.push_back(TempVec);
+	TempInt = 0;
+      }
+    }
+    fin.close();
     return AnsMat;
   }
 
