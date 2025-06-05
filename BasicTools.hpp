@@ -1,5 +1,5 @@
 /*--------------------
-ver 250427
+ver 250605
 --------------------*/
 
 #ifndef BasicTools_hpp
@@ -59,8 +59,13 @@ public:
     return dis(gen);
   }
 };
-vector<RandomGenerator> RandGen(30);
-//WARNING: max number of threads: 30
+#ifdef MaxThreadNum //Control the max number of threads
+  static_assert(MaxThreadNum>0,"[BasicTools.hpp] MaxThreadNum must be positive");
+  vector<RandomGenerator> RandGen(MaxThreadNum);
+#else
+  vector<RandomGenerator> RandGen(30);
+  //WARNING: default max number of threads: 30
+#endif
 
 //---------------
 
