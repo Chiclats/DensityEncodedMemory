@@ -1,11 +1,14 @@
 /*--------------------
-ver 250415
+ver 250630
 --------------------*/
 
 #ifndef ActiveNematics_hpp
 #define ActiveNematics_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include<omp.h>
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"

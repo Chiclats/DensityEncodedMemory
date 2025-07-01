@@ -1,11 +1,15 @@
 /*--------------------
-ver 250605
+ver 250630
 --------------------*/
 
 #ifndef BasicTools_hpp
 #define BasicTools_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#else
+#include <random> 
+#endif
 
 #define ii complex<double>(0,1)//unit of imaginary numbers
 #define pi 3.1415926535897932

@@ -1,11 +1,14 @@
 /*--------------------
-ver 240912
+ver 250630
 --------------------*/
 
 #ifndef InteractionRealization_hpp
 #define InteractionRealization_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"
 #include"CollectiveMotionRealization.hpp"

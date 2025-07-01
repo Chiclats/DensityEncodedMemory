@@ -1,11 +1,14 @@
 /*--------------------
-ver 250407
+ver 250630
 --------------------*/
 
 #ifndef NematicAlgnPP_hpp
 #define NematicAlgnPP_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include<omp.h>
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"

@@ -1,11 +1,14 @@
 /*--------------------
-  ver. 240802
+  ver. 250630
   --------------------*/
 
 #ifndef ExtendedCollectiveMotionRealization_hpp
 #define ExtendedCollectiveMotionRealization_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 #include"StateProcessing.hpp"
 

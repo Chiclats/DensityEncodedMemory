@@ -1,10 +1,13 @@
 /*----------
-  ver 240719
+  ver 250630
   ----------*/
 #ifndef ActiveIsingModel_hpp
 #define ActiveIsingModel_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 
 using namespace std;

@@ -1,11 +1,14 @@
 /*--------------------
-ver 250417
+ver 250630
 --------------------*/
 
 #ifndef StateProcessing_hpp
 #define StateProcessing_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"
 

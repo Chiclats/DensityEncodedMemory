@@ -1,12 +1,15 @@
 /*--------------------
-ver 250417
+ver 250630
 A collection of data processing functions.
 --------------------*/
 
 #ifndef DataProcessing_hpp
 #define DataProcessing_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"
 #include"StateProcessing.hpp"

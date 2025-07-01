@@ -1,11 +1,14 @@
 /*--------------------
-ver 250409
+ver 250630
 --------------------*/
 
 #ifndef ContinuousVicsekModel_hpp
 #define ContinuousVicsekModel_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include<omp.h>
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"

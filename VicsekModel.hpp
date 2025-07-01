@@ -1,11 +1,14 @@
 /*--------------------
-ver 250407
+ver 250701
 --------------------*/
 
 #ifndef VicsekModel_hpp
 #define VicsekModel_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include<omp.h>
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"
@@ -17,7 +20,7 @@ namespace VicsekModel_2D{
     double x,y,vx,vy;
   };
 
-  Particle PolarParticle2D_To_Particle(PolarParticle2D p){
+  Particle PolarParticle2D_To_Particle(const PolarParticle2D& p){
     double Dir=p.Dir;
     Particle ans;
     ans.x=p.Pos.real();
@@ -27,7 +30,7 @@ namespace VicsekModel_2D{
     return ans;
   }
 
-  vector<Particle> PolarParticle2D_GT_To_vParticle(PolarParticle2D_GT PG){
+  vector<Particle> PolarParticle2D_GT_To_vParticle(const PolarParticle2D_GT& PG){
     vector<Particle> ansPG;
     for( auto p : PG ){
       ansPG.push_back(PolarParticle2D_To_Particle(p));
@@ -35,7 +38,7 @@ namespace VicsekModel_2D{
     return ansPG;
   }
 
-  void UpdatePGFromVParticle(PolarParticle2D_GT& PG,vector<Particle> vP)
+  void UpdatePGFromVParticle(PolarParticle2D_GT& PG,const vector<Particle>& vP)
   {//Update a PolarParticle2D_GT based on a vector<Particle>, only Pos and Dir changes
     for( int i=0 ; i<PG.size() ; i++ ){
       PG[i].Pos=vP[i].x+vP[i].y*ii;
@@ -96,13 +99,13 @@ namespace VicsekModel_2D{
 			  const function<double(Particle,Particle)>& Distance,
 			  const int& i_MP=0)
   {
-    double
+    const double
       SystemSize_X=Parameters[0],
       SystemSize_Y=Parameters[1],
       CharLength=Parameters[2],
       Velocity=Parameters[3],
-      Sigma=Parameters[4],
-      GuidingCoeff=0;
+      Sigma=Parameters[4];
+    double GuidingCoeff=0;
     if(Parameters.size()==6) GuidingCoeff=Parameters[5];
     
     vector<double> NeighborDirList_x(PG.size(),0),NeighborDirList_y(PG.size(),0);
@@ -342,8 +345,19 @@ namespace VicsekModel_2D{
     const vector<array<int,4>> LDAdjBox=LowerRightAdjacentBoxIndex(BoxInfo);
     const function<double(Particle,Particle)> Distance_=Distance::Periodic(SystemSize_X,SystemSize_Y,CharLength);
 
-    for( int i_Step=0 ; i_Step<StepNumber ; i_Step++ )
+    for( int i_Step=0 ; i_Step<StepNumber ; i_Step++ ){
       Evolve_VicsekModel(vP,MeshedIndex,LDAdjBox,Parameters,Distance_,i_MP);
+
+      #ifdef EVOLVE_SHRINK_TO_FIT_TURN
+      //To avoid the expansion of MeshedIndex, which sometimes leads to OOM
+      //EVOLVE_SHRINK_TO_FIT_TURN, when defined, is an integer
+      if(i_Step%EVOLVE_SHRINK_TO_FIT_TURN==0){
+	for( int i_Box=0 ; i_Box<BoxInfo.size() ; i_Box++ )
+	  MeshedIndex[i_Box].shink_to_fit();
+	MeshedIndex.shink_to_fit();
+      }	
+      #endif
+    }
 
     auto ansPG=PG;
     UpdatePGFromVParticle(ansPG,vP);

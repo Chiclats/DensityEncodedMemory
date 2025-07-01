@@ -1,11 +1,14 @@
 /*--------------------
-ver 241222
+ver 250630
 --------------------*/
 
 #ifndef CollectiveMotionRealization_hpp
 #define CollectiveMotionRealization_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include<omp.h>
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"

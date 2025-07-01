@@ -1,11 +1,14 @@
 /*--------------------
-ver 250505
+ver 250530
 --------------------*/
 
 #ifndef VicsekModel_VectorialNoise_hpp
 #define VicsekModel_VectorialNoise_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include<omp.h>
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"

@@ -1,11 +1,14 @@
 /*--------------------
-ver 250417
+ver 250630
 --------------------*/
 
 #ifndef ClusterUnionFind_hpp
 #define ClusterUnionFind_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 #include"AgentRealization.hpp"
 #include"StateProcessing.hpp"

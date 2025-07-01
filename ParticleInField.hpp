@@ -1,11 +1,14 @@
 /*--------------------
-  ver. 240803
+  ver. 250630
   --------------------*/
 
 #ifndef ParticleInField_hpp
 #define ParticleInField_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 #include"StateProcessing.hpp"
 

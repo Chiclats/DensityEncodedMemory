@@ -1,11 +1,14 @@
 /*--------------------
-ver 250407
+ver 250630
 --------------------*/
 
 #ifndef AgentRealization_hpp
 #define AgentRealization_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 
 #include <cstring>
@@ -271,7 +274,13 @@ namespace FileIO{
       cerr<<"In FileIO::OutParticleVec_Bin. Failed to open the file. Attempt="<<Attempts<<endl;
 
       //system error output
+#ifndef vs
       std::cerr << "Error: " << strerror(errno) << std::endl;
+#else
+      char errMsg[256];
+      strerror_s(errMsg, sizeof(errMsg), errno);
+      std::cerr << "Error: " << errMsg << std::endl;
+#endif // !vs
 
       if(Attempts==3){
 	FileIO::OutParticleVec(Filename+".txt",PG);	

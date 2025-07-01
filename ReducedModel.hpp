@@ -1,10 +1,13 @@
 /*----------
-  ver 240912
+  ver 250630
   ----------*/
 #ifndef ReducedModel_hpp
 #define ReducedModel_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 
 using namespace std;

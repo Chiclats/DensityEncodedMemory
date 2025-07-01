@@ -1,11 +1,14 @@
 /*--------------------
-  ver. 240804
+  ver. 250630
   --------------------*/
 
 #ifndef AligningRepulsiveInteraction_hpp
 #define AligningRepulsiveInteraction_hpp
 
+#ifndef vs
 #include<bits/stdc++.h>
+#endif
+
 #include"BasicTools.hpp"
 #include"StateProcessing.hpp"
 #include"ExtendedCollectiveMotionRealization.hpp"
