@@ -346,6 +346,7 @@ namespace VicsekModel_2D{
     const function<double(Particle,Particle)> Distance_=Distance::Periodic(SystemSize_X,SystemSize_Y,CharLength);
 
     for( int i_Step=0 ; i_Step<StepNumber ; i_Step++ ){
+      
       Evolve_VicsekModel(vP,MeshedIndex,LDAdjBox,Parameters,Distance_,i_MP);
 
       #ifdef EVOLVE_SHRINK_TO_FIT_TURN
@@ -353,8 +354,8 @@ namespace VicsekModel_2D{
       //EVOLVE_SHRINK_TO_FIT_TURN, when defined, is an integer
       if(i_Step%EVOLVE_SHRINK_TO_FIT_TURN==0){
 	for( int i_Box=0 ; i_Box<BoxInfo.size() ; i_Box++ )
-	  MeshedIndex[i_Box].shink_to_fit();
-	MeshedIndex.shink_to_fit();
+	  MeshedIndex[i_Box].shrink_to_fit();
+	MeshedIndex.shrink_to_fit();
       }	
       #endif
     }
