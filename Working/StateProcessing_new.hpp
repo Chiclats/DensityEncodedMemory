@@ -35,6 +35,7 @@ namespace BoxMeshing_2D{
 
   unsigned int decide_box_neighbor_index(const unsigned int box_index,const int offset_x,const int offset_y,const BoxShape& box_shape)
   {// to decide the neighbor box index based on the box index and the offset (offset_x, offset_y)
+    // WARNING: in order to decide the neighbor box index, calculating directly is faster than reading from a table
     auto [system_size_x, system_size_y, char_length, box_num_x, box_num_y, _] = box_shape;
     
     unsigned int index_x = box_index % box_num_x;
@@ -51,8 +52,25 @@ namespace BoxMeshing_2D{
     return neighbor_index_x + box_num_x * neighbor_index_y;
   }
 
+  unsigned int decide_box_neighbor_index_ordered(const unsigned int box_index,const int nbr_index, const BoxShape& box_shape)
+  {// to decide the neighbor box index based on the box index and the neighbor index (0-7)
+    // neighbor index order: 0-bottom-left, 1-bottom, 2-bottom-right, 3-left, 4-right, 5-top-left, 6-top, 7-top-right
+    static const std::array<std::pair<int,int>,8> offset_array = {
+	{-1,-1}, {0,-1}, {1,-1},
+	{-1,0},           {1,0},
+	{-1,1},  {0,1},  {1,1}
+      };
+		
+    if(nbr_index < 0 || nbr_index >= 8)
+      throw std::runtime_error("In BoxMeshing_2D::decide_box_neighbor_index_ordered : neighbor index should be between 0 and 7.");
+		
+    const auto [offset_x, offset_y] = offset_array[nbr_index];
+    return decide_box_neighbor_index(box_index, offset_x, offset_y, box_shape);
+  }
+
   std::vector<std::array<unsigned int, 8>> all_adjacent_box_index(const BoxShape& box_shape)
   {// to return the indices of all adjacent boxes for each box
+    // WARNING: in order to decide the neighbor box index, calculating directly is faster than reading from a table
     auto [_, _, _, box_num_x, box_num_y, total_box_num] = box_shape;
     std::vector<std::array<unsigned int, 8>> ans_vec(total_box_num);
 		
