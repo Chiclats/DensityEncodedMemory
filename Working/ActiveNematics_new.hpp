@@ -86,15 +86,7 @@ namespace ActiveNematics_2D{
       particles[i] = {dis_x(gen), dis_y(gen), cos(angle), sin(angle), i, 0};
       particles[i].decide_box_index(params.box_shape);
     }
-
-    //for test
-    std::cout << "size " << particles.size() << " capacity " << particles.capacity() << std::endl;
-
-    particles.shrink_to_fit();
-
-    //
-    std::cout << "size " << particles.size() << " capacity " << particles.capacity() << std::endl;
-    
+   
     return particles;
   }
 
@@ -120,7 +112,7 @@ namespace ActiveNematics_2D{
     // to store sum(vx) and sum(vy)
 
     // calculate the mean velocity dir
-    for( unsigned int i_box=0; i_box<box_shape[5]; i_box++)
+    for( unsigned int i_box=0; i_box<std::get<5>(box_shape); i_box++)
       for(unsigned int i_p=0; i_p<meshed_index_mat[i_box].size(); i_p++){
 
 	const unsigned int index_i = meshed_index_mat[i_box][i_p]; // index of the particle in PG
@@ -134,7 +126,7 @@ namespace ActiveNematics_2D{
 	  
 	  const unsigned int index_j = meshed_index_mat[i_box][j_p]; // index of the particle in PG
 
-	  if(distance_square_periodic(PG[index_i], PG[index_j], box_shape) <= box_shape[2] * box_shape[2]){
+	  if(distance_square_periodic(PG[index_i], PG[index_j], box_shape) <= std::get<2>(box_shape) * std::get<2>(box_shape)){
 	    // if distance <= char_length
 	    if(PG[index_j].vx * PG[index_i].vx + PG[index_j].vy * PG[index_i].vy > 0){ // cos( Dir_i - Dir_j ) > 0
 	      neighbor_dir_list_x[index_i] += PG[index_j].vx;
@@ -160,7 +152,7 @@ namespace ActiveNematics_2D{
 
 	  for(const auto index_j : meshed_index_mat[adj_box_index]){
 
-	    if(distance_square_periodic(PG[index_i], PG[index_j], box_shape) <= box_shape[2] * box_shape[2]){
+	    if(distance_square_periodic(PG[index_i],PG[index_j],box_shape) <= std::get<2>(box_shape) * std::get<2>(box_shape)){
 	      // if distance <= char_length
 	      if(PG[index_j].vx * PG[index_i].vx + PG[index_j].vy * PG[index_i].vy > 0){ // cos( Dir_i - Dir_j ) > 0
 		neighbor_dir_list_x[index_i] += PG[index_j].vx;
@@ -209,7 +201,7 @@ namespace ActiveNematics_2D{
     }
 
     //update meshed index mat
-    std::vector<std::vector<unsigned int>> new_meshed_index_mat(box_shape[5]);
+    std::vector<std::vector<unsigned int>> new_meshed_index_mat(std::get<5>(box_shape));
 
     for(auto& p : PG) {
       p.decide_box_index(box_shape);

@@ -55,11 +55,11 @@ namespace BoxMeshing_2D{
   unsigned int decide_box_neighbor_index_ordered(const unsigned int box_index,const int nbr_index, const BoxShape& box_shape)
   {// to decide the neighbor box index based on the box index and the neighbor index (0-7)
     // neighbor index order: 0-bottom-left, 1-bottom, 2-bottom-right, 3-left, 4-right, 5-top-left, 6-top, 7-top-right
-    static const std::array<std::pair<int,int>,8> offset_array = {
+    static const std::array<std::pair<int,int>,8> offset_array = {{
 	{-1,-1}, {0,-1}, {1,-1},
 	{-1,0},           {1,0},
 	{-1,1},  {0,1},  {1,1}
-      };
+      }};
 		
     if(nbr_index < 0 || nbr_index >= 8)
       throw std::runtime_error("In BoxMeshing_2D::decide_box_neighbor_index_ordered : neighbor index should be between 0 and 7.");
