@@ -210,7 +210,33 @@ namespace ActiveNematics_2D{
 
     meshed_index_mat = std::move(new_meshed_index_mat);
   }
-  
-}
+
+  double nematic_order_parameter(const std::vector<Particle>& PG)
+  {// to calculate the nematic order parameter S = sqrt( (sum(cos(2*Dir)))^2 + (sum(sin(2*Dir)))^2 ) / N
+    double sum_cos_2dir = 0, sum_sin_2dir = 0;
+		
+    for(const auto& p : PG) {
+      sum_cos_2dir += p.vx * p.vx - p.vy * p.vy; // cos(2*Dir) = cos^2(Dir) - sin^2(Dir) = vx^2 - vy^2
+      sum_sin_2dir += 2 * p.vx * p.vy; // sin(2*Dir) = 2*sin(Dir)*cos(Dir) = 2*vx*vy
+    }
+		
+    return std::sqrt(sum_cos_2dir * sum_cos_2dir + sum_sin_2dir * sum_sin_2dir) / PG.size();
+  }
+
+  double nematic_mean_direction(const std::vector<Particle>& PG)
+  {// to calculate the mean nematic direction Theta = atan2( sum(sin(2*Dir)), sum(cos(2*Dir)) )
+    // range of Theta is [0, 2*pi)
+    double sum_cos_2dir = 0, sum_sin_2dir = 0;
+		
+    for(const auto& p : PG) {
+      sum_cos_2dir += p.vx * p.vx - p.vy * p.vy; // cos(2*Dir) = cos^2(Dir) - sin^2(Dir) = vx^2 - vy^2
+      sum_sin_2dir += 2 * p.vx * p.vy; // sin(2*Dir) = 2*sin(Dir)*cos(Dir) = 2*vx*vy
+    }
+
+    double theta = std::atan2(sum_sin_2dir, sum_cos_2dir);
+    if(theta<0) theta+= 2*std::numbers::pi; // to make sure the range is [0, 2*pi)
+
+    return theta;
+  }
 
 #endif//ActiveNematics_new_hpp
