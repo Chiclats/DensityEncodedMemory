@@ -239,4 +239,6 @@ namespace ActiveNematics_2D{
     return theta;
   }
 
+}
+
 #endif//ActiveNematics_new_hpp
