@@ -239,6 +239,24 @@ namespace ActiveNematics_2D{
     return theta;
   }
 
+  std::vector<Particle> read_particles_from_file(const std::string& filename)
+  {// to read particle information from a file and return a vector of Particle
+    std::vector<Particle> particles;
+    std::ifstream infile(filename);
+    
+    if (!infile)
+      throw std::runtime_error("Could not open file: " + filename);
+
+    
+    double x, y, vx, vy;
+    unsigned int index, box_index;
+    
+    while (infile >> x >> y >> vx >> vy >> index >> box_index)
+      particles.push_back({x, y, vx, vy, index, box_index});
+    
+    return particles;
+  }
+
 }
 
 #endif//ActiveNematics_new_hpp
